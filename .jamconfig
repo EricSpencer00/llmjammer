@@ -5,7 +5,9 @@
     "*.md",
     "*.rst",
     "setup.py",
-    ".github/"
+    ".github/",
+    "venv/",
+    "src/"
   ],
   "obfuscation_level": "medium",
   "preserve_docstrings": false,
