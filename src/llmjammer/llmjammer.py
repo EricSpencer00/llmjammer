@@ -24,7 +24,7 @@ class Obfuscator:
         self.mapping_path = mapping_path or Path(MAPPING_FILE)
         self.config = self._load_config()
         self.mapping = self._load_mapping()
-        self.reverse_mapping = {v: k for k, v in self.mapping.items()}
+        self._update_reverse_mapping()
         
     def _load_config(self) -> dict:
         """Load the configuration file if it exists."""
@@ -54,10 +54,16 @@ class Obfuscator:
                 return {}
         return {}
     
+    def _update_reverse_mapping(self):
+        """Update the reverse mapping based on the current mapping."""
+        self.reverse_mapping = {v: k for k, v in self.mapping.items()}
+    
     def _save_mapping(self):
         """Save the current mapping to file."""
         with open(self.mapping_path, "w") as f:
             json.dump(self.mapping, f, indent=2)
+        # Update reverse mapping after saving
+        self._update_reverse_mapping()
     
     def _generate_misleading_name(self, original: str) -> str:
         """Generate a misleading but valid Python identifier."""
@@ -82,6 +88,8 @@ class Obfuscator:
             new_name = ''.join(random.choices(string.ascii_lowercase, k=random.randint(3, 10)))
             
         self.mapping[original] = new_name
+        # Update reverse mapping when adding a new entry
+        self.reverse_mapping[new_name] = original
         return new_name
     
     def jam_file(self, file_path: Path) -> bool:
@@ -141,6 +149,9 @@ class Obfuscator:
                 
             if self.config.get("obfuscation_level") in ["medium", "aggressive"]:
                 source = self._deobfuscate_comments(source)
+            
+            # Make sure reverse mapping is up-to-date
+            self._update_reverse_mapping()
             
             # Parse the source code
             tree = ast.parse(source)
