@@ -10,11 +10,19 @@ maintainers = [
   {name = "Eric Spencer", email = "espencer2@luc.edu"}
 ]
 classifiers = [
-
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: English",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
 ]
 license = {text = "MIT"}
 dependencies = [
-  "typer"
+  "typer>=0.9.0",
+  "rich>=13.4.2",
+  "ast-comments>=1.0.1",
 ]
 requires-python = ">= 3.10"
 
@@ -28,7 +36,6 @@ test = [
 ]
 
 [project.urls]
-
 bugs = "https://github.com/EricSpencer00/llmjammer/issues"
 changelog = "https://github.com/EricSpencer00/llmjammer/blob/master/changelog.md"
 homepage = "https://github.com/EricSpencer00/llmjammer"

@@ -1,0 +1,14 @@
+{
+  "exclude": [
+    "tests/",
+    "docs/",
+    "*.md",
+    "*.rst",
+    "setup.py",
+    ".github/"
+  ],
+  "obfuscation_level": "medium",
+  "preserve_docstrings": false,
+  "use_encryption": false,
+  "encryption_key": ""
+}

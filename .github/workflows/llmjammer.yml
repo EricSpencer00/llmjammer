@@ -1,0 +1,33 @@
+name: LLMJammer Obfuscation
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  obfuscate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install LLMJammer
+        run: pip install -e .
+      
+      - name: Obfuscate code
+        run: llmjammer jam .
+      
+      - name: Commit changes
+        run: |
+          git config --global user.name "LLMJammer Bot"
+          git config --global user.email "bot@llmjammer.com"
+          git commit -am "Obfuscate code with LLMJammer [skip ci]" || echo "No changes to commit"
+          git push

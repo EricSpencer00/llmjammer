@@ -1,22 +1,150 @@
 #!/usr/bin/env python
-import pytest
 
 """Tests for `llmjammer` package."""
 
-# from llmjammer import llmjammer
+import json
+import os
+import tempfile
+from pathlib import Path
+
+import pytest
+
+from llmjammer import Obfuscator
 
 
 @pytest.fixture
-def response():
-    """Sample pytest fixture.
+def sample_python_file():
+    """Create a temporary Python file for testing."""
+    with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as tmp:
+        content = """
+def calculate_model_accuracy(model, test_data, labels):
+    \"\"\"
+    Calculate the accuracy of a machine learning model.
+    
+    Args:
+        model: The trained model
+        test_data: Test dataset
+        labels: Ground truth labels
+        
+    Returns:
+        float: The accuracy score
+    \"\"\"
+    predictions = model.predict(test_data)
+    correct = sum(1 for pred, label in zip(predictions, labels) if pred == label)
+    return correct / len(labels)
 
-    See more at: http://doc.pytest.org/en/latest/fixture.html
-    """
-    # import requests
-    # return requests.get('https://github.com/audreyfeldroy/cookiecutter-pypackage')
+class NeuralNetwork:
+    def __init__(self, input_size, hidden_size, output_size):
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+        
+    def train(self, training_data, epochs=100):
+        for epoch in range(epochs):
+            # Training logic would go here
+            pass
+            
+    def predict(self, data):
+        # Prediction logic would go here
+        return [0] * len(data)
+"""
+        tmp.write(content.encode())
+        tmp_path = Path(tmp.name)
+    
+    yield tmp_path
+    
+    # Clean up
+    if tmp_path.exists():
+        os.unlink(tmp_path)
 
 
-def test_content(response):
-    """Sample pytest test function with the pytest fixture as an argument."""
-    # from bs4 import BeautifulSoup
-    # assert 'GitHub' in BeautifulSoup(response.content).title.string
+@pytest.fixture
+def config_file():
+    """Create a temporary config file for testing."""
+    with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
+        config = {
+            "exclude": ["tests/", "docs/"],
+            "obfuscation_level": "medium",
+            "preserve_docstrings": False,
+            "use_encryption": False,
+            "encryption_key": "",
+        }
+        tmp.write(json.dumps(config).encode())
+        tmp_path = Path(tmp.name)
+    
+    yield tmp_path
+    
+    # Clean up
+    if tmp_path.exists():
+        os.unlink(tmp_path)
+
+
+def test_obfuscator_initialization():
+    """Test that the Obfuscator initializes properly."""
+    obfuscator = Obfuscator()
+    assert obfuscator is not None
+    assert obfuscator.config is not None
+    assert obfuscator.mapping == {}
+
+
+def test_jam_and_unjam(sample_python_file, config_file):
+    """Test the obfuscation and deobfuscation process."""
+    # Read the original content
+    with open(sample_python_file, "r") as f:
+        original_content = f.read()
+    
+    # Create an obfuscator with our test config
+    obfuscator = Obfuscator(config_file)
+    
+    # Obfuscate the file
+    success = obfuscator.jam_file(sample_python_file)
+    assert success, "Obfuscation should succeed"
+    
+    # Read the obfuscated content
+    with open(sample_python_file, "r") as f:
+        obfuscated_content = f.read()
+    
+    # Verify that the content changed
+    assert original_content != obfuscated_content, "Content should be different after obfuscation"
+    
+    # Check that a mapping was created
+    assert len(obfuscator.mapping) > 0, "A mapping should be created"
+    
+    # Deobfuscate the file
+    success = obfuscator.unjam_file(sample_python_file)
+    assert success, "Deobfuscation should succeed"
+    
+    # Read the deobfuscated content
+    with open(sample_python_file, "r") as f:
+        deobfuscated_content = f.read()
+    
+    # Compare with original (may have formatting differences due to AST operations)
+    assert "calculate_model_accuracy" in deobfuscated_content, "Original function name should be restored"
+    assert "NeuralNetwork" in deobfuscated_content, "Original class name should be restored"
+    
+
+def test_excluded_files(sample_python_file):
+    """Test that excluded files are not obfuscated."""
+    # Create a custom config that excludes our test file
+    with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
+        filename = os.path.basename(sample_python_file)
+        config = {
+            "exclude": [filename],
+            "obfuscation_level": "medium",
+        }
+        tmp.write(json.dumps(config).encode())
+        config_path = Path(tmp.name)
+    
+    try:
+        # Create an obfuscator with our custom config
+        obfuscator = Obfuscator(config_path)
+        
+        # Try to obfuscate the file (should be skipped)
+        count = obfuscator.jam(sample_python_file.parent)
+        
+        # Since our file should be excluded, no files should be obfuscated
+        assert count == 0, "No files should be obfuscated when excluded"
+    finally:
+        # Clean up
+        if config_path.exists():
+            os.unlink(config_path)
