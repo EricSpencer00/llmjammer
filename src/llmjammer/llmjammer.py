@@ -499,6 +499,57 @@ class ASTDeobfuscator(ast.NodeTransformer):
         return node
 
 
+def find_git_hooks_dir() -> Optional[Path]:
+    """Find the Git hooks directory in the current repository."""
+    cwd = Path.cwd()
+    git_dir = None
+    
+    # Look for .git directory in current or parent directories
+    current = cwd
+    while current != current.parent:
+        if (current / ".git").is_dir():
+            git_dir = current / ".git"
+            break
+        current = current.parent
+        
+    if git_dir is None:
+        return None
+        
+    hooks_dir = git_dir / "hooks"
+    return hooks_dir if hooks_dir.is_dir() else None
+
+
+def check_git_hooks_installed() -> dict:
+    """Check if LLMJammer Git hooks are installed."""
+    hooks_dir = find_git_hooks_dir()
+    if hooks_dir is None:
+        return {"installed": False, "reason": "Not in a Git repository"}
+    
+    required_hooks = ["pre-commit", "post-checkout", "post-merge", "pre-push", "post-rewrite"]
+    installed_hooks = []
+    missing_hooks = []
+    
+    for hook in required_hooks:
+        hook_path = hooks_dir / hook
+        if hook_path.exists():
+            # Check if it's our hook by looking for "LLMJammer" in the file
+            with open(hook_path, "r") as f:
+                content = f.read()
+                if "LLMJammer" in content:
+                    installed_hooks.append(hook)
+                else:
+                    missing_hooks.append(f"{hook} (exists but not managed by LLMJammer)")
+        else:
+            missing_hooks.append(hook)
+    
+    return {
+        "installed": len(installed_hooks) == len(required_hooks),
+        "hooks_dir": str(hooks_dir),
+        "installed_hooks": installed_hooks,
+        "missing_hooks": missing_hooks
+    }
+
+
 def install_git_hooks(hooks_dir: Optional[Path] = None) -> bool:
     """Install Git hooks for automatic obfuscation/deobfuscation."""
     if hooks_dir is None:
@@ -529,19 +580,93 @@ def install_git_hooks(hooks_dir: Optional[Path] = None) -> bool:
     with open(pre_commit_path, "w") as f:
         f.write("""#!/bin/sh
 # LLMJammer pre-commit hook
-echo "Running LLMJammer to obfuscate code..."
-llmjammer jam .
-git add .
+# Obfuscate code before it gets committed to the repository
+
+# Exit if no Python files are being committed
+git diff --cached --name-only --diff-filter=ACMR | grep -q '\.py$' || exit 0
+
+# Get the list of Python files being committed
+PYTHON_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep '\.py$')
+if [ -z "$PYTHON_FILES" ]; then
+    exit 0
+fi
+
+echo "Running LLMJammer to obfuscate code before commit..."
+# Get the directory where this hook is running from
+GIT_ROOT=$(git rev-parse --show-toplevel)
+
+# Save the current mapping file before obfuscation if it exists
+if [ -f "$GIT_ROOT/.jammapping.json" ]; then
+    cp "$GIT_ROOT/.jammapping.json" "$GIT_ROOT/.jammapping.json.bak"
+fi
+
+# Obfuscate only the staged Python files
+for file in $PYTHON_FILES; do
+    llmjammer jam "$GIT_ROOT/$file"
+    # Re-add the file to the staging area
+    git add "$GIT_ROOT/$file"
+done
+
+# Add the mapping file to the commit if it changed
+if [ -f "$GIT_ROOT/.jammapping.json" ]; then
+    git add "$GIT_ROOT/.jammapping.json"
+fi
 """)
     pre_commit_path.chmod(0o755)  # Make executable
+    
+    # Create pre-push hook
+    pre_push_path = hooks_dir / "pre-push"
+    with open(pre_push_path, "w") as f:
+        f.write("""#!/bin/sh
+# LLMJammer pre-push hook
+# Ensure all code is obfuscated before pushing
+
+# Get the directory where this hook is running from
+GIT_ROOT=$(git rev-parse --show-toplevel)
+
+# List all Python files in the repository
+PYTHON_FILES=$(git ls-files '*.py')
+if [ -z "$PYTHON_FILES" ]; then
+    exit 0
+fi
+
+echo "Verifying all Python files are obfuscated before push..."
+# Obfuscate all Python files before pushing
+llmjammer jam "$GIT_ROOT"
+
+# Add any changes that might have occurred
+git add -A "$GIT_ROOT"
+
+# Commit any changes that might have occurred during obfuscation
+if ! git diff-index --quiet HEAD; then
+    git commit -m "Ensure all code is obfuscated before push"
+fi
+""")
+    pre_push_path.chmod(0o755)  # Make executable
     
     # Create post-checkout hook
     post_checkout_path = hooks_dir / "post-checkout"
     with open(post_checkout_path, "w") as f:
         f.write("""#!/bin/sh
 # LLMJammer post-checkout hook
-echo "Running LLMJammer to deobfuscate code..."
-llmjammer unjam .
+# Deobfuscate code after checkout for local development
+
+# Parameters passed to post-checkout:
+# $1 - Previous HEAD
+# $2 - New HEAD
+# $3 - Flag indicating if checkout was a branch checkout
+
+# Skip for file checkouts (not a branch checkout)
+if [ "$3" != "1" ]; then
+    exit 0
+fi
+
+echo "Running LLMJammer to deobfuscate code after checkout..."
+# Get the directory where this hook is running from
+GIT_ROOT=$(git rev-parse --show-toplevel)
+
+# Deobfuscate all Python files
+llmjammer unjam "$GIT_ROOT"
 """)
     post_checkout_path.chmod(0o755)  # Make executable
     
@@ -550,10 +675,32 @@ llmjammer unjam .
     with open(post_merge_path, "w") as f:
         f.write("""#!/bin/sh
 # LLMJammer post-merge hook
-echo "Running LLMJammer to deobfuscate code..."
-llmjammer unjam .
+# Deobfuscate code after merge or pull for local development
+
+echo "Running LLMJammer to deobfuscate code after merge/pull..."
+# Get the directory where this hook is running from
+GIT_ROOT=$(git rev-parse --show-toplevel)
+
+# Deobfuscate all Python files
+llmjammer unjam "$GIT_ROOT"
 """)
     post_merge_path.chmod(0o755)  # Make executable
+    
+    # Create post-rewrite hook for handling amends and rebases
+    post_rewrite_path = hooks_dir / "post-rewrite"
+    with open(post_rewrite_path, "w") as f:
+        f.write("""#!/bin/sh
+# LLMJammer post-rewrite hook
+# Deobfuscate code after rebase, amend, etc.
+
+echo "Running LLMJammer to deobfuscate code after rewrite..."
+# Get the directory where this hook is running from
+GIT_ROOT=$(git rev-parse --show-toplevel)
+
+# Deobfuscate all Python files
+llmjammer unjam "$GIT_ROOT"
+""")
+    post_rewrite_path.chmod(0o755)  # Make executable
     
     print("Git hooks installed successfully.")
     return True
