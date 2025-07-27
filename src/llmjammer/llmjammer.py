@@ -224,9 +224,13 @@ class Obfuscator:
         def encode_comment(match):
             comment = match.group(1)
             # Base64 encode the comment
-            encoded = base64.b64encode(comment.encode()).decode()
-            return f"# {encoded}"
-            
+            try:
+                encoded = base64.b64encode(comment.encode()).decode()
+                return f"# {encoded}"
+            except Exception as e:
+                print(f"Error encoding comment: {e}")
+                return match.group(0)
+
         # Replace comments with encoded versions
         pattern = r"#\s*(.*?)$"
         return re.sub(pattern, encode_comment, source, flags=re.MULTILINE)
