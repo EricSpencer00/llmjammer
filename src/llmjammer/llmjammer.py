@@ -217,6 +217,9 @@ class Obfuscator:
         for pattern in self.config.get("exclude", []):
             if re.search(pattern.replace("*", ".*"), path_str):
                 return False
+        # Explicitly exclude venv directory
+        if "venv/" in path_str:
+            return False
         return True
     
     def _obfuscate_comments(self, source: str) -> str:
@@ -226,6 +229,9 @@ class Obfuscator:
             # Base64 encode the comment
             try:
                 encoded = base64.b64encode(comment.encode()).decode()
+                # Validate encoded comment to ensure it does not break syntax
+                if "\n" in encoded or "'" in encoded or '"' in encoded:
+                    return match.group(0)  # Skip encoding if invalid
                 return f"# {encoded}"
             except Exception as e:
                 print(f"Error encoding comment: {e}")
@@ -281,7 +287,6 @@ class Obfuscator:
     
     def _apply_unicode_confusables(self, source: str) -> str:
         """Replace some characters with visually similar Unicode ones."""
-        # Define character replacements
         confusables = {
             'a': 'а',  # Cyrillic 'а'
             'e': 'е',  # Cyrillic 'е'
@@ -292,20 +297,20 @@ class Obfuscator:
             'x': 'х',  # Cyrillic 'х'
             'y': 'у',  # Cyrillic 'у'
         }
-        
-        # Only apply to strings and comments to avoid breaking the code
+
         def replace_in_string(match):
             s = match.group(0)
-            # Replace ~10% of confusable characters
             result = ""
             for char in s:
                 if char in confusables and random.random() < 0.1:
                     result += confusables[char]
                 else:
                     result += char
+            # Validate result to ensure it does not break syntax
+            if "\n" in result or "'" in result or '"' in result:
+                return match.group(0)  # Skip replacement if invalid
             return result
-            
-        # Find string literals and comments
+
         string_pattern = r'(\"\"\".*?\"\"\"|\'\'\'.*?\'\'\'|\".*?\"|\'.*?\'|#.*?$)'
         return re.sub(string_pattern, replace_in_string, source, flags=re.DOTALL | re.MULTILINE)
     
