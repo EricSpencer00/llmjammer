@@ -1,0 +1,4 @@
+baseURL = "https://EricSpencer00.github.io/llmjammer/"
+languageCode = "en-us"
+title = "LLMJammer Documentation"
+theme = "hugo-theme-docdock"
