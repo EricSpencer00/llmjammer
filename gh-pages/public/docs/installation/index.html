@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Learn how to install LLMJammer.">
+  <meta name="author" content="Eric Spencer">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101010" media="(prefers-color-scheme: dark)">
+  <title>Installation · LLMJammer Documentation</title>
+  <link rel="canonical" href="//localhost:1313/docs/installation/">
+  <link rel="stylesheet" href="/assets/css/docs.min.8e9408609771a441499aa5571a4585b0ca95783b842d5c758af5eef1457b0fe0.css" integrity="">
+
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon/favicon.ico">
+  <link rel="icon" href="/favicon/favicon-16x16.png" sizes="16x16" type="image/png">
+  <link rel="icon" href="/favicon/favicon-32x32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" sizes="180x180">
+  
+</head>
+
+<body>
+
+<div id="outer-wrapper">
+
+  <div id="aside-wrapper">
+    <aside>
+      <div>
+        <button class="btn"><i>❌</i>Close</button>
+      </div>
+
+      <a href="//localhost:1313/" class="site-logo">LLMJammer Documentation</a>
+
+      <nav role="navigation">
+        <details open>
+          <summary>Documentation</summary>
+          <ul>
+            <li>
+              <a class="" href="//localhost:1313/docs/overview/">Overview</a>
+            </li>
+            <li>
+              <a class="" href="//localhost:1313/docs/llmjammer-documentation/">LLMJammer Documentation</a>
+            </li>
+            </ul>
+        </details>
+        <details open>
+          <summary>Basics</summary>
+          <ul>
+            <li>
+              <a class="active" href="//localhost:1313/docs/installation/">Installation</a>
+            </li>
+            <li>
+              <a class="" href="//localhost:1313/docs/usage/">Usage</a>
+            </li>
+            </ul>
+        </details>
+        <details open>
+          <summary>Help</summary>
+          <ul>
+            <li>
+              <a class="" href="//localhost:1313/docs/llmjammer-help/">llmjammer help</a>
+            </li>
+            </ul>
+        </details>
+        
+      </nav>
+    </aside>
+  </div>
+
+  <div id="content-wrapper">
+    <header>
+      <a href="//localhost:1313/" class="site-logo">LLMJammer Documentation</a>
+    </header>
+
+    <main>
+      <article>
+        <nav>
+          <button class="btn"><i>⬅️</i> On this section</button>
+          <button class="btn">On this page <i>➡️</i></button>
+        </nav>
+        <header>
+          <h1>Installation</h1>
+          <p></p>
+        </header>
+        <div id="article-body">
+          <h1 id="installation">Installation</h1>
+<h2 id="stable-release">Stable Release</h2>
+<p>To install LLMJammer, run this command in your terminal:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">pip install llmjammer
+</span></span></code></pre></div><p>This is the preferred method to install LLMJammer, as it will always install the most recent stable release.</p>
+<p>If you don&rsquo;t have <a href="https://pip.pypa.io" target="_blank" >pip</a> installed, this <a href="http://docs.python-guide.org/en/latest/starting/installation/" target="_blank" >Python installation guide</a> can guide you through the process.</p>
+<h2 id="requirements">Requirements</h2>
+<p>LLMJammer requires:</p>
+<ul>
+<li>Python 3.10 or higher</li>
+<li>Git (for Git hook integration)</li>
+</ul>
+<h2 id="from-sources">From Sources</h2>
+<p>The sources for LLMJammer can be downloaded from the <a href="https://github.com/EricSpencer00/llmjammer" target="_blank" >Github repo</a>.</p>
+<p>You can either clone the public repository:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">git clone git://github.com/EricSpencer00/llmjammer
+</span></span></code></pre></div><p>Or download the <a href="https://github.com/EricSpencer00/llmjammer/tarball/master" target="_blank" >tarball</a>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">curl -OJL https://github.com/EricSpencer00/llmjammer/tarball/master
+</span></span></code></pre></div><p>Once you have a copy of the source, you can install it with:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">pip install -e .
+</span></span></code></pre></div><p>For development installation with testing dependencies:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">pip install -e <span class="s2">&#34;.[test]&#34;</span>
+</span></span></code></pre></div><h2 id="quick-setup">Quick Setup</h2>
+<p>After installation, you can quickly set up LLMJammer in your project:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl"><span class="nb">cd</span> your-project
+</span></span><span class="line"><span class="cl">llmjammer init
+</span></span></code></pre></div><p>This will:</p>
+<ol>
+<li>Create a default configuration file (<code>.jamconfig</code>)</li>
+<li>Offer to install Git hooks for automatic obfuscation/deobfuscation</li>
+<li>Offer to set up a GitHub Action for CI/CD integration</li>
+</ol>
+<h2 id="verifying-installation">Verifying Installation</h2>
+<p>To verify that LLMJammer was installed correctly:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">llmjammer --help
+</span></span></code></pre></div><p>You should see the help message with all available commands.</p>
+
+        </div>
+
+        <footer>
+          <time datetime="0001-01-01"><i>🕒</i> Updated: 0001-01-01</time>
+          <a href="//localhost:1313/docs/llmjammer-documentation/"><i>﹤</i> Previous</a>
+          <a href="//localhost:1313/docs/usage/">Next <i>﹥</i></a>
+          </footer>
+      </article>
+
+      <aside>
+        <div>
+          <button class="btn"><i>❌</i>Close</button>
+        </div>
+        <strong>On this page</strong>
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#stable-release">Stable Release</a></li>
+    <li><a href="#requirements">Requirements</a></li>
+    <li><a href="#from-sources">From Sources</a></li>
+    <li><a href="#quick-setup">Quick Setup</a></li>
+    <li><a href="#verifying-installation">Verifying Installation</a></li>
+  </ul>
+</nav>
+      </aside>
+    </main>
+
+    <footer>
+      <div><i>🧑‍💻</i>Built by and copyright<a href="https://localhost:1313" target="_blank">Eric Spencer</a><i>📅</i> 2022-2025<i>🚀</i> <a href="https://github.com/EricSpencer00/llmjammer" target="_blank">GitHub</a></div>
+      <div>
+        <button class="btn"><i>☀️</i><i>⁄</i><i>🌑</i></button>
+      </div>
+    </footer>
+  </div>
+
+</div>
+
+<div id="body-model-outer"></div>
+<script type="text/javascript" src="/assets/js/docs.min.12ffdc25c0149ef34e761ee54587f2aae17affcb8375298ad2180851930cb142.js" integrity=""></script>
+</body>
+</html>

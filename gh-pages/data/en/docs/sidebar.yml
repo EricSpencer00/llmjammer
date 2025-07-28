@@ -1,0 +1,18 @@
+- title: Documentation
+  pages:
+    - title: Overview
+      url: en/docs/overview
+    - title: LLMJammer Documentation
+      url: en/docs/help
+
+- title: Basics
+  pages:
+    - title: Installation
+      url: en/docs/installation
+    - title: Usage
+      url: en/docs/usage
+
+- title: Help
+  pages:
+    - title: llmjammer help
+      url: en/docs/help

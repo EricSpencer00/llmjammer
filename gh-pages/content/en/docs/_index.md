@@ -18,5 +18,6 @@ LLMJammer solves this problem by automatically obfuscating your code before it's
 
 ## Contents
 
-- [Installation](installation/)
-- [Usage](usage/)
+- [Installation](en/docs/installation/)
+- [Usage](en/docs/usage/)
+- [Help](en/docs/help/)

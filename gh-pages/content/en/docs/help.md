@@ -1,6 +1,8 @@
 ---
 title: "llmjammer help"
 description: "Command-line options and commands for LLMJammer."
+aliases:
+- "/docs/help"
 ---
 
 # Help
