@@ -5,7 +5,7 @@
 A Python code obfuscator designed to confuse LLMs scraping public repositories while maintaining code functionality.
 
 * Free software: MIT License
-* Website: [ericspencer00.github.io/llmjammer](ericspencer00.github.io/llmjammer)
+* Website: [ericspencer00.github.io/llmjammer](https://ericspencer00.github.io/llmjammer)
 
 ## Why LLMJammer?
 
