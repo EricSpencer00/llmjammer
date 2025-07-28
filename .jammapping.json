@@ -1,0 +1,22 @@
+{
+  "calculate_model_accuracy": "tokenize",
+  "model": "torch",
+  "test_data": "dataset",
+  "labels": "model",
+  "predictions": "jhmavhqhka",
+  "correct": "generate",
+  "pred": "etpqipohwp",
+  "label": "numpy",
+  "NeuralNetwork": "data",
+  "__init__": "bcmcxky",
+  "self": "backprop",
+  "input_size": "kbyzozuwhe",
+  "hidden_size": "epoch",
+  "output_size": "sample",
+  "train": "train",
+  "training_data": "decode",
+  "epochs": "loss",
+  "epoch": "test",
+  "predict": "dqgzokmv",
+  "data": "tensorflow"
+}

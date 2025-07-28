@@ -148,3 +148,52 @@ def test_excluded_files(sample_python_file):
         # Clean up
         if config_path.exists():
             os.unlink(config_path)
+
+
+def test_self_protection():
+    """Test that llmjammer doesn't obfuscate itself."""
+    obfuscator = Obfuscator()
+    
+    # Test that llmjammer files are excluded
+    llmjammer_files = [
+        Path("src/llmjammer/llmjammer.py"),
+        Path("src/llmjammer/cli.py"),
+        Path("src/llmjammer/__init__.py"),
+    ]
+    
+    for file_path in llmjammer_files:
+        if file_path.exists():
+            should_process = obfuscator._should_process(file_path)
+            assert not should_process, f"{file_path} should not be processed"
+
+
+def test_comment_obfuscation_safety():
+    """Test that comment obfuscation doesn't create syntax errors."""
+    obfuscator = Obfuscator()
+    
+    # Test with comments that could cause issues
+    test_cases = [
+        '''# This is a test comment with "quotes" and {braces}
+def test_function():
+    # Another comment with 'single quotes'
+    return "hello"
+''',
+        '''# Comment with backslash \\
+def test():
+    pass
+''',
+        '''# Comment with newline
+def test():
+    pass
+''',
+    ]
+    
+    for i, test_source in enumerate(test_cases):
+        # Try to obfuscate comments
+        obfuscated = obfuscator._obfuscate_comments(test_source)
+        
+        # Verify the result is valid Python
+        try:
+            compile(obfuscated, f'<test_case_{i}>', 'exec')
+        except SyntaxError as e:
+            pytest.fail(f"Comment obfuscation created syntax error in test case {i}: {e}")

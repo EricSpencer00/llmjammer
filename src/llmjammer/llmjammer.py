@@ -98,6 +98,11 @@ class Obfuscator:
             print(f"Error: {file_path} does not exist or is not a file.")
             return False
             
+        # Safety check: prevent obfuscating llmjammer package itself
+        if not self._should_process(file_path):
+            print(f"Skipping {file_path} (excluded from obfuscation)")
+            return False
+            
         try:
             with open(file_path, "r") as f:
                 source = f.read()
@@ -137,6 +142,11 @@ class Obfuscator:
         """Deobfuscate a single Python file."""
         if not file_path.exists() or not file_path.is_file():
             print(f"Error: {file_path} does not exist or is not a file.")
+            return False
+            
+        # Safety check: prevent deobfuscating llmjammer package itself
+        if not self._should_process(file_path):
+            print(f"Skipping {file_path} (excluded from deobfuscation)")
             return False
             
         try:
@@ -214,6 +224,11 @@ class Obfuscator:
     def _should_process(self, path: Path) -> bool:
         """Check if a file should be processed based on exclusion patterns."""
         path_str = str(path)
+        
+        # Explicitly exclude llmjammer package itself to prevent self-corruption
+        if "llmjammer" in path_str and ("site-packages/llmjammer" in path_str or "src/llmjammer" in path_str):
+            return False
+            
         for pattern in self.config.get("exclude", []):
             if re.search(pattern.replace("*", ".*"), path_str):
                 return False
@@ -230,9 +245,15 @@ class Obfuscator:
             try:
                 encoded = base64.b64encode(comment.encode()).decode()
                 # Validate encoded comment to ensure it does not break syntax
-                if "\n" in encoded or "'" in encoded or '"' in encoded:
+                # Check for characters that could break f-string syntax
+                if ("\n" in encoded or 
+                    "'" in encoded or 
+                    '"' in encoded or 
+                    "{" in encoded or 
+                    "}" in encoded or
+                    "\\" in encoded):
                     return match.group(0)  # Skip encoding if invalid
-                return f"# {encoded}"
+                return "# " + encoded  # Use string concatenation instead of f-string
             except Exception as e:
                 print(f"Error encoding comment: {e}")
                 return match.group(0)
@@ -248,7 +269,7 @@ class Obfuscator:
             try:
                 # Try to decode as base64
                 decoded = base64.b64decode(encoded.encode()).decode()
-                return f"# {decoded}"
+                return "# " + decoded  # Use string concatenation instead of f-string
             except:
                 # If it's not valid base64, leave it as is
                 return match.group(0)
