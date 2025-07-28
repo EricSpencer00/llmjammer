@@ -81,10 +81,20 @@ def config_file():
 
 def test_obfuscator_initialization():
     """Test that the Obfuscator initializes properly."""
-    obfuscator = Obfuscator()
-    assert obfuscator is not None
-    assert obfuscator.config is not None
-    assert obfuscator.mapping == {}
+    # Create a temporary mapping file to avoid persistence issues
+    with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
+        tmp.write(b"{}")  # Empty mapping
+        mapping_path = Path(tmp.name)
+    
+    try:
+        obfuscator = Obfuscator(mapping_path=mapping_path)
+        assert obfuscator is not None
+        assert obfuscator.config is not None
+        assert obfuscator.mapping == {}
+    finally:
+        # Clean up
+        if mapping_path.exists():
+            os.unlink(mapping_path)
 
 
 def test_jam_and_unjam(sample_python_file, config_file):
