@@ -1,12 +1,11 @@
 # LLMJammer
 
 ![PyPI version](https://img.shields.io/pypi/v/llmjammer.svg)
-[![Documentation Status](https://readthedocs.org/projects/llmjammer/badge/?version=latest)](https://llmjammer.readthedocs.io/en/latest/?version=latest)
 
 A Python code obfuscator designed to confuse LLMs scraping public repositories while maintaining code functionality.
 
 * Free software: MIT License
-* Documentation: https://llmjammer.readthedocs.io.
+* Website: [ericspencer00.github.io/llmjammer](ericspencer00.github.io/llmjammer)
 
 ## Why LLMJammer?
 
